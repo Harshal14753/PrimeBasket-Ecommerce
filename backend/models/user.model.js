@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import ENV from '../lib/env.js';
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -16,7 +19,8 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        minLength: [6, "Password must be at least 6 characters long"]
+        minLength: [6, "Password must be at least 6 characters long"],
+        select: false
     },
     role: {
         type: String,
@@ -38,6 +42,27 @@ const userSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+// Automatically verify customers and admins on creation; sellers must be approved by admin
+userSchema.pre('save', function(next) {
+    if (this.isNew && this.role !== 'seller') {
+        this.isVerified = true;
+    }
+    next();
+});
+
+userSchema.methods.generateAuthToken = function() {
+    const token = jwt.sign({ _id: this._id }, ENV.JWT_SECRET, { expiresIn: ENV.JWT_EXPIRES_IN });
+    return token;
+}
+
+userSchema.methods.comparePassword = async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+}
+
+userSchema.statics.hashPassword = async function(password) {
+    return await bcrypt.hash(password, 10);
+}
 
 const User = mongoose.model('User', userSchema);
 

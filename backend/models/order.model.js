@@ -34,10 +34,52 @@ const orderSchema = new mongoose.Schema({
         },
         status: {
             type: String,
-            enum: ["pending", "shipped", "delivered", "cancelled"],
-            default: "pending"
+            enum: [
+                "PLACED",
+                "CONFIRMED",
+                "SHIPPED",
+                "OUT_FOR_DELIVERY",
+                "DELIVERED",
+                "CANCELLED",
+                "RETURN_REQUESTED",
+                "RETURNED"
+            ],
+            default: "PLACED"
         }
-    }]
+    }],
+    shippingAddress: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Address",
+        required: true
+    },
+    // Reference to the Payment document (set after payment is initiated)
+    payment: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Payment",
+        default: null
+    },
+    // Denormalized copy of Payment.status for quick reads (no extra join needed)
+    paymentStatus: {
+        type: String,
+        enum: ["PENDING", "COMPLETED", "FAILED", "REFUNDED"],
+        default: "PENDING"
+    },
+    // Overall order lifecycle status
+    status: {
+        type: String,
+        enum: [
+            "AWAITING_PAYMENT",  // COD or payment not yet done
+            "PLACED",            // Payment confirmed
+            "CONFIRMED",         // Seller confirmed
+            "SHIPPED",
+            "OUT_FOR_DELIVERY",
+            "DELIVERED",
+            "CANCELLED",
+            "RETURN_REQUESTED",
+            "RETURNED"
+        ],
+        default: "AWAITING_PAYMENT"
+    }
 }, {
     timestamps: true
 });

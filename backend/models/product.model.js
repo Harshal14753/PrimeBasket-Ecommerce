@@ -58,6 +58,11 @@ const productSchema = new mongoose.Schema({
         default: 0,
         min: [0, "Total reviews must be a positive number"]
     },
+    status: {
+        type: String,
+        enum: ["PENDING", "APPROVED", "BLOCKED"],
+        default: "PENDING"
+    }
 }, {
     timestamps: true
 });

@@ -6,8 +6,16 @@ const productVariantSchema = new mongoose.Schema({
         ref: "Product",
         required: true
     },
-    color: String,
-    size: String,
+    attributes: {
+        type: Map, // dynamic attributes
+        of: String
+    },
+
+    sku: {
+        type: String,
+        required: true,
+        unique: true
+    },
     stock: {
         type: Number,
         required: true,
@@ -18,6 +26,10 @@ const productVariantSchema = new mongoose.Schema({
         required: true,
         min: [0, "Price must be a positive number"]
     },
+    isActive: {
+        type: Boolean,
+        default: true
+    }
 }, {
     timestamps: true
 });
